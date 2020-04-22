@@ -19,77 +19,14 @@
     integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
     crossorigin=""></script>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
   <script src="https://kit.fontawesome.com/a3b41d95b1.js" crossorigin="anonymous"></script>
 
-  <style>
-    html {
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #wrapper {
-      display: grid;
-      grid-template-columns: 4fr 1fr;
-      grid-row-gap: 10px;
-      padding: 10px;
-      grid-template-areas:
-        "header header"
-        "sidebar sidebar"
-        "map-container map-container"
-        "footer footer";
-    }
-
-    @media (min-width: 1200px) {
-      #wrapper {
-        grid-template-areas:
-          "header header"
-          "map-container sidebar"
-          "footer footer";
-      }
-
-      #sidebar {
-        margin-left: 10px;
-      }
-    }
-
-    #header {
-      grid-area: header;
-      font-size: 48px;
-      text-align: center;
-    }
-
-    #map-container {
-      grid-area: map-container;
-      border: solid 5px black;
-    }
-
-    #sidebar {
-      grid-area: sidebar;
-      background-color: rgb(220, 220, 220);
-      padding: 10px;
-      border-radius: 10px;
-      /* border: solid 5px black; */
-    }
-
-    #footer {
-      grid-area: footer;
-      text-align: center;
-      /* border: solid 5px black; */
-    }
-
-    #map {
-      height: 800px;
-    }
-
-    .imagelisting {
-      padding: 10px;
-      background-color: rgb(200, 200, 200);
-    }
-
-    .imagelisting:nth-child(odd) {
-      color: #fff;
-      background: rgb(100, 100, 100)
-    }
-  </style>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
@@ -98,75 +35,127 @@
       <i class="fas fa-map-marked-alt"></i> MapPlacer
     </header>
 
-    <section id="map-container">
-      <div id="map"></div>
-    </section>
-
-    <script>
-      const map = L.map('map').setView([-25.2744, 133.7751], 1);
-
-      const images = [];
-
-      const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-      const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-      const tiles = L.tileLayer(tileUrl, {
-        attribution
-      });
-
-      tiles.addTo(map);
-
-      mymarker = L.marker([50.5, 30.5], {
-        draggable: true
-      }).addTo(map);
-
-      var imageUrl =
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Australia_satellite_plane.jpg/1200px-Australia_satellite_plane.jpg',
-        imageBounds = [
-          [-8.2744, 110.7751],
-          [-44.2744, 155.7751]
-        ];
-      ausImg = L.imageOverlay(imageUrl, imageBounds).addTo(map);
-      ausImg.setOpacity(.5);
-
-      function newImage(url) {
-        images.push({
-          url: url
-        });
-
-        L.imageOverlay(url, map.getBounds()).addTo(map);
-      }
-    </script>
-
-    <section id="sidebar">MapPlacer is a tool which allows users to superimpose images over maps/satellite imagery.
+    <section id="config">MapPlacer is a tool that allows users to superimpose images over maps/satellite imagery.
       Useful for cross referencing
       historical maps with modern day maps/satellite imagery.<br><br>
-      <input type="text" id="urlinput"><br>
-      <button onclick="newImage(document.getElementById('urlinput').value)">
-        newImage
-      </button>
-      <br>
-      Image Layers
-      <div class="imagelisting">
-        Image 1
+      <label for="urlInput" class="inputLabel">Image Overlay URL</label>
+      <div id="urlInputSection">
+        <input type="text" id="urlInput">
+        <button id="urlUpdateButton" onclick="updateImageUrl(document.getElementById('urlInput').value)">
+          Update Image
+        </button>
       </div>
-      <div class="imagelisting">
-        Image 2
-      </div>
-      <div class="imagelisting">
-        Image 3
-      </div>
-      <div class="imagelisting">
-        Image 4
+      <br />
+      <label for="opacitySlider" class="inputLabel">Image Overlay Visibility</label>
+      <div id="opacityInputSection">
+        <input type="range" min="0" max="1" step=".001" id="opacitySlider"
+          oninput="updateImageOpacity(document.getElementById('opacitySlider').value)"></input>
       </div>
     </section>
 
+    <div id="map"></div>
+
     <footer id="footer">
-      Made By <a href="calebjrodgers.com">Caleb Rodgers</a> | Found this tool useful? Give it a share!
-      <a href="https://twitter.com"><i class="fab fa-twitter"></i></a>
-      <a href="https://facebook.com"><i class="fab fa-facebook-f"></i></a>
-      <a href="mailto:example@example.com"><i class="far fa-envelope"></i></a>
+      Made By <a href="https://calebjrodgers.com" style="text-decoration: underline;">Caleb Rodgers</a> | Found this
+      tool
+      useful? Spread the word!
+      <div id="shareLinks">
+        <a href="https://twitter.com" class="shareLink"><i class="fab fa-twitter"></i></a>
+        <a href="https://facebook.com" class="shareLink"><i class="fab fa-facebook-f"></i></a>
+        <a href="mailto:example@example.com" class="shareLink"><i class="far fa-envelope"></i></a>
+      </div>
     </footer>
   </div>
+
+  <script>
+    const map = L.map('map').setView([-25.2744, 133.7751], 4);
+
+    const baseMap = {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+    };
+
+    const tiles = L.tileLayer(baseMap.url, baseMap.options);
+    tiles.addTo(map);
+
+    const overlayImage = {
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Australia_satellite_plane.jpg/1200px-Australia_satellite_plane.jpg',
+      opacity: .5,
+      bounds: [
+        [-8.2744, 110.7751],
+        [-44.2744, 155.7751]
+      ]
+    };
+
+
+
+    // Set the user inputs to the starting overlayImage values
+    document.getElementById('urlInput').placeholder = overlayImage.url;
+    document.getElementById('opacitySlider').value = overlayImage.opacity;
+
+
+    const handleIcon = L.icon({
+      iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Circle_-_black_simple.svg',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [-3, -76],
+      className: 'cornerIcon'
+    });
+
+    // const imageContainer = new L.Polygon([
+    //   [overlayImage.bounds[0][0], overlayImage.bounds[0][1]],
+    //   [overlayImage.bounds[0][0], overlayImage.bounds[1][1]],
+    //   [overlayImage.bounds[1][0], overlayImage.bounds[1][1]],
+    //   [overlayImage.bounds[1][0], overlayImage.bounds[0][1]]
+    // ], {
+    //   draggable: true,
+    //   opacity: 1
+    // }).addTo(map);
+
+
+
+    cornerMarker1 = L.marker(overlayImage.bounds[0], {
+      draggable: true,
+      icon: handleIcon
+    }).addTo(map);
+
+    cornerMarker2 = L.marker(overlayImage.bounds[1], {
+      draggable: true,
+      icon: handleIcon
+    }).addTo(map);
+
+    cornerMarker1.on('drag', function () {
+      overlayImage.bounds[0] = cornerMarker1.getLatLng();
+      updateImage();
+    });
+
+    cornerMarker2.on('drag', function () {
+      overlayImage.bounds[1] = cornerMarker2.getLatLng();
+      updateImage();
+    });
+
+    image = L.imageOverlay(overlayImage.url, overlayImage.bounds, options = {
+      opacity: overlayImage.opacity
+    }).addTo(map);
+
+    function updateImage() {
+      image.setOpacity(overlayImage.opacity);
+      image.setUrl(overlayImage.url);
+      image.setBounds(overlayImage.bounds);
+    }
+
+    function updateImageUrl(url) {
+      overlayImage.url = url;
+      updateImage();
+    }
+
+    function updateImageOpacity(opacity) {
+      overlayImage.opacity = opacity;
+      updateImage();
+    }
+  </script>
 </body>
 
 </html>
