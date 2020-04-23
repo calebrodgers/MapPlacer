@@ -19,8 +19,21 @@
     integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
     crossorigin=""></script>
 
+  <!-- leaflet.toolbar -->
+  <link rel="stylesheet" href="plugins/Leaflet.toolbar/leaflet.toolbar.css" />
+
+  <script src="plugins/Leaflet.toolbar/leaflet.toolbar-src.js"></script>
+
+  <!-- leaflet.distortableimage -->
+  <link rel="stylesheet" href="plugins/Leaflet.DistortableImage/leaflet.distortableimage.css" />
+
+  <script src="plugins/Leaflet.DistortableImage/leaflet.distortableimage.js"></script>
+
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Spartan:wght@400;800&display=swap" rel="stylesheet">
 
   <!-- Font Awesome -->
   <script src="https://kit.fontawesome.com/a3b41d95b1.js" crossorigin="anonymous"></script>
@@ -35,39 +48,52 @@
       <i class="fas fa-map-marked-alt"></i> MapPlacer
     </header>
 
-    <section id="config">MapPlacer is a tool that allows users to superimpose images over maps/satellite imagery.
+    <section id="about">
+      MapPlacer is a tool that allows you to superimpose images over maps/satellite imagery.
       Useful for cross referencing
-      historical maps with modern day maps/satellite imagery.<br><br>
-      <label for="urlInput" class="inputLabel">Image Overlay URL</label>
+      historical maps with modern day maps/satellite imagery.
+    </section>
+
+    <section id="sidebar">
+
       <div id="urlInputSection">
-        <input type="text" id="urlInput">
-        <button id="urlUpdateButton" onclick="updateImageUrl(document.getElementById('urlInput').value)">
-          Update Image
+        <label for="urlInput" class="inputLabel">Image Overlay URL</label>
+        <input type="text" id="urlInput"
+          placeholder="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Australia_satellite_plane.jpg/1200px-Australia_satellite_plane.jpg">
+        <button id="urlAddButton" onclick="addImageFromURL(document.getElementById('urlInput').value)">
+          Add Image
         </button>
       </div>
-      <br />
-      <label for="opacitySlider" class="inputLabel">Image Overlay Visibility</label>
-      <div id="opacityInputSection">
-        <input type="range" min="0" max="1" step=".001" id="opacitySlider"
-          oninput="updateImageOpacity(document.getElementById('opacitySlider').value)"></input>
-      </div>
+
+      <section id="sidebarMapLayers">
+        <div class='sidebarMapLayer'>
+          <img class='sidebarMapLayerThumb'
+            src='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Australia_satellite_plane.jpg/1200px-Australia_satellite_plane.jpg'>
+          <input type='range' min='0' max='1' step='0.001' value='.5' class='sidebarMapLayerOpacity'>
+          <a href='#' class='sidebarMapLayerDelete'><i class='fas fa-trash-alt'></i></a>
+        </div>
+      </section>
     </section>
 
     <div id="map"></div>
 
     <footer id="footer">
-      Made By <a href="https://calebjrodgers.com" style="text-decoration: underline;">Caleb Rodgers</a> | Found this
-      tool
-      useful? Spread the word!
+      Made in 🇦🇺 | Created By <a href="https://calebjrodgers.com" style="text-decoration: underline;">Caleb
+        Rodgers</a> |
+      Found this tool useful? Spread the word!
       <div id="shareLinks">
-        <a href="https://twitter.com" class="shareLink"><i class="fab fa-twitter"></i></a>
-        <a href="https://facebook.com" class="shareLink"><i class="fab fa-facebook-f"></i></a>
-        <a href="mailto:example@example.com" class="shareLink"><i class="far fa-envelope"></i></a>
+        <a href="https://twitter.com/intent/tweet?text=Check%20out%20MapPlacer,%20atool%20that%20allows%20you%20to%20overlay%20images%20over%20maps!%20https%3A//mapplacer.calebjrodgers.com"
+          class="shareLink"><i class="fab fa-twitter"></i></a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A//mapplacer.calebjrodgers.com"
+          class="shareLink"><i class="fab fa-facebook-f"></i></a>
+        <a href="mailto:?subject=MapPlacer&body=I've%20recently%20discovered%20this%20tool%20called%20MapPlacer%20that%20allows%20you%20to%20overlay%20images%20over%20maps!%20Check%20it%20out%3A%20https%3A//mapplacer.calebjrodgers.com"
+          class="shareLink"><i class="far fa-envelope"></i></a>
       </div>
     </footer>
   </div>
 
   <script>
+    // Initialize the map and tiles
     const map = L.map('map').setView([-25.2744, 133.7751], 4);
 
     const baseMap = {
@@ -80,81 +106,66 @@
     const tiles = L.tileLayer(baseMap.url, baseMap.options);
     tiles.addTo(map);
 
-    const overlayImage = {
+    const images = [];
+
+    // Default image of Australia
+    const defaultImage = {
       url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Australia_satellite_plane.jpg/1200px-Australia_satellite_plane.jpg',
-      opacity: .5,
-      bounds: [
-        [-8.2744, 110.7751],
-        [-44.2744, 155.7751]
+      corners: [
+        L.latLng(-8.2744, 110.7751),
+        L.latLng(-8.2744, 155.7751),
+        L.latLng(-44.2744, 110.7751),
+        L.latLng(-44.2744, 155.7751),
       ]
     };
 
-
-
-    // Set the user inputs to the starting overlayImage values
-    document.getElementById('urlInput').placeholder = overlayImage.url;
-    document.getElementById('opacitySlider').value = overlayImage.opacity;
-
-
-    const handleIcon = L.icon({
-      iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Circle_-_black_simple.svg',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-      popupAnchor: [-3, -76],
-      className: 'cornerIcon'
-    });
-
-    // const imageContainer = new L.Polygon([
-    //   [overlayImage.bounds[0][0], overlayImage.bounds[0][1]],
-    //   [overlayImage.bounds[0][0], overlayImage.bounds[1][1]],
-    //   [overlayImage.bounds[1][0], overlayImage.bounds[1][1]],
-    //   [overlayImage.bounds[1][0], overlayImage.bounds[0][1]]
-    // ], {
-    //   draggable: true,
-    //   opacity: 1
-    // }).addTo(map);
-
-
-
-    cornerMarker1 = L.marker(overlayImage.bounds[0], {
-      draggable: true,
-      icon: handleIcon
-    }).addTo(map);
-
-    cornerMarker2 = L.marker(overlayImage.bounds[1], {
-      draggable: true,
-      icon: handleIcon
-    }).addTo(map);
-
-    cornerMarker1.on('drag', function () {
-      overlayImage.bounds[0] = cornerMarker1.getLatLng();
-      updateImage();
-    });
-
-    cornerMarker2.on('drag', function () {
-      overlayImage.bounds[1] = cornerMarker2.getLatLng();
-      updateImage();
-    });
-
-    image = L.imageOverlay(overlayImage.url, overlayImage.bounds, options = {
-      opacity: overlayImage.opacity
-    }).addTo(map);
-
-    function updateImage() {
-      image.setOpacity(overlayImage.opacity);
-      image.setUrl(overlayImage.url);
-      image.setBounds(overlayImage.bounds);
+    function newImage(url) {
+      images.push(L.distortableImageOverlay(url, {
+        actions: [L.DragAction, L.ScaleAction, L.RotateAction, L.FreeRotateAction, L
+          .LockAction, L.DistortAction
+        ],
+        mode: 'freeRotate'
+      }).addTo(map).setOpacity(.5));
+      updateSidebar();
     }
 
-    function updateImageUrl(url) {
-      overlayImage.url = url;
-      updateImage();
+    function addImageFromURL(input) {
+      if (input) {
+        newImage(input);
+      }
     }
 
-    function updateImageOpacity(opacity) {
-      overlayImage.opacity = opacity;
-      updateImage();
+    function updateOpacity(image) {
+      images[image].setOpacity(document.getElementById('opacity' + image).value);
     }
+
+    function removeImage(image) {
+      images[image].remove();
+      images.splice(image, 1);
+      updateSidebar();
+    }
+
+    // Sidebar!
+    function updateSidebar() {
+      $('#sidebarMapLayers').empty();
+      images.forEach(function (item, index) {
+        $('#sidebarMapLayers').append(
+          `<div class='sidebarMapLayer'><img class='sidebarMapLayerThumb'src='${item._url}'><div class='sidebarMapLayerOpacityContainer'><label for='opacity${index}' class="inputLabel idebarMapLayerOpacityLabel">Image Visibility</label><input type='range' min='0' max='1' step='0.001' value='${item.options.opacity}' class='sidebarMapLayerOpacity' id='opacity${index}'' oninput='updateOpacity(${index})'></div><a href='#' onclick='removeImage(${index})' class='sidebarMapLayerDelete'><i class='fas fa-trash-alt'></i></a></div>`
+        );
+      });
+    }
+
+    // Adds the default image
+    map.whenReady(function () {
+      images.push(L.distortableImageOverlay(defaultImage.url, {
+        actions: [L.DragAction, L.ScaleAction, L.RotateAction, L.FreeRotateAction, L
+          .LockAction, L.DistortAction
+        ],
+        mode: 'freeRotate',
+        corners: defaultImage.corners
+      }).addTo(map).setOpacity(.5));
+      updateSidebar();
+    });
   </script>
 </body>
 

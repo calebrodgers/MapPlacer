@@ -1,37 +1,44 @@
+:root {
+    --main-text-color: #4C6663;
+    --bg-primary: #80CFA9;
+    --bg-seconday: #A7E2E3;
+
+    --footer-full: rgba(76, 102, 99, 1);
+    --footer-translucent: rgba(76, 102, 99, 0.8);
+}
+
 html,
 body {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Spartan', sans-serif;
     margin: 0;
-    background-color: #333333;
-    color: #fff;
+    background-color: var(--bg-primary);
+    color: var(--main-text-color);
 }
 
 #wrapper {
     display: grid;
     height: 100vh;
-    /* grid-template-columns: 4fr 1fr; */
-    grid-template-rows: 1fr 2fr 10fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr 2fr 10fr 1fr;
     box-sizing: border-box;
-    padding: 10px;
     grid-template-areas:
         "header"
-        "config"
+        "about"
+        "sidebar"
         "map"
         "footer";
 }
 
-/* @media (min-width: 1200px) {
-  #wrapper {
-    grid-template-areas:
-      "header header"
-      "map config"
-      "footer footer";
-  }
-
-  #config {
-    margin-left: 10px;
-  }
-} */
+@media (min-width: 1200px) {
+    #wrapper {
+        grid-template-columns: 1fr 4fr;
+        grid-template-rows: 1fr 10fr 1fr;
+        grid-template-areas:
+            "header about"
+            "sidebar map"
+            "footer footer";
+    }
+}
 
 #header {
     grid-area: header;
@@ -41,15 +48,21 @@ body {
     text-align: center;
 }
 
-#config {
-    grid-area: config;
+#about {
+    grid-area: about;
+    background-color: var(--bg-seconday);
     padding: 20px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    background-color: #1c1c1c;
+}
+
+#sidebar {
+    grid-area: sidebar;
+    background-color: var(--bg-seconday);
+    overflow-y: scroll;
 }
 
 .inputLabel {
+    grid-column-start: 1;
+    grid-column-end: 3;
     font-size: 12px;
 }
 
@@ -57,86 +70,130 @@ body {
     display: grid;
     grid-template-columns: 6fr 1fr;
     grid-column-gap: 20px;
+    background-color: var(--bg-seconday);
+    padding: 20px;
 }
 
 #urlInput {
-    color: #fff;
+    color: var(--main-text-color);
     background-color: rgba(0, 0, 0, 0);
     border: none;
-    border-bottom: solid 2px #fff;
+    border-bottom: solid 2px var(--main-text-color);
     font-size: 20px;
 }
 
-#urlUpdateButton {
-    color: #fff;
+#urlAddButton {
+    color: var(--main-text-color);
     background-color: rgba(0, 0, 0, 0);
-    border: solid 2px #fff;
+    border: solid 2px var(--main-text-color);
     border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-#opacitySlider {
+#urlAddButton:hover {
+    color: var(--bg-seconday);
+    background-color: var(--main-text-color);
+}
+
+/* sidebarMapLayer */
+
+.sidebarMapLayer {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr;
+    background-color: var(--bg-primary);
+    height: 100px;
+}
+
+.sidebarMapLayer:nth-child(even) {
+    background-color: var(--bg-seconday);
+}
+
+.sidebarMapLayerThumb {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sidebarMapLayerOpacityContainer {
+    width: 80%;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.sidebarMapLayerOpacity {
+
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+
     -webkit-appearance: none;
-    width: 100%;
-    height: 10px;
+    height: 5px;
     border-radius: 5px;
-    background: #fff;
+    background: var(--main-text-color);
     outline: none;
     -webkit-transition: .2s;
     transition: opacity .2s;
 }
 
 
-#opacitySlider::-webkit-slider-thumb {
+.sidebarMapLayerOpacity::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--main-text-color);
     cursor: pointer;
-    border: solid 2px #1c1c1c;
+    border: none;
 }
 
-#opacitySlider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
+.sidebarMapLayerOpacity::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--main-text-color);
     cursor: pointer;
-    border: solid 5px #1c1c1c;
+    border: none;
 }
+
+.sidebarMapLayerDelete {
+    text-decoration: none;
+    font-size: 20px;
+    color: red;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* map */
 
 #map {
     grid-area: map;
-    border: solid 8px #1c1c1c;
-    background-color: #333333;
+    background-color: var(--bg-primary);
     min-height: 500px;
-
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-
-.handleIcon {
-    cursor: nwse-resize;
 }
 
 #footer {
     grid-area: footer;
     text-align: center;
     padding: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--footer-translucent);
 }
 
 #footer a {
     text-decoration: none;
-    color: rgba(255, 255, 255, 1);
+    color: var(--footer-full);
 }
 
 #shareLinks {
     font-size: 24px;
+    margin: 10px;
 }
 
 .shareLink {
