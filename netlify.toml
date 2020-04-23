@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "https://mapplacer.netlify.app"
+  to = "https://mapplacer.calebjrodgers.com"
+  status = 301
+  force = true
